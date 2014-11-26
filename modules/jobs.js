@@ -1,13 +1,16 @@
 module.exports = {
+	MINER: 1,
+	
 	employ: function(creeps, strategy) {
 		// Assign a role to each creep.
 		for (var i in creeps) {
-			creeps[i].memory.role = this.Miner().type;
-			creeps[i].memory.working = false;
-			
+			// Initialize.
 			if (creeps[i].memory.jobsCompleted === undefined) {
 				creeps[i].memory.jobsCompleted = 0;
+				creeps[i].memory.working = false;
 			}
+			
+			creeps[i].memory.role = this.Miner().type;
 		}
 	},
 	
@@ -21,6 +24,13 @@ module.exports = {
 				var spawn = this.worker.pos.findNearest(Game.MY_SPAWNS);
 				var returning = false;
 				
+				if (source === null) return;
+
+				if (source.energy > 50) {
+					this.worker.moveTo(source);
+					this.worker.harvest(source);
+				}
+				
 				// Return with the energy.
 				if (this.worker.energy == this.worker.energyCapacity) {
 					creep.moveTo(spawn);
@@ -30,13 +40,15 @@ module.exports = {
 				} else {
 					// Don't harvest energy to extinction.
 					if (source.energy > 50) {
+						console.log("move to source");
 						this.worker.moveTo(source);
+						console.log("harvest from source");
 						this.worker.harvest(source);
 					}
 				}
 				
-				if (returning && this.worker.energy == 0) {
-					console.log("job complete");
+				if (returning) {
+					console.log(this.worker.energy);
 					returning = false;
 				}
 			}

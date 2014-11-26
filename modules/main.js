@@ -17,24 +17,28 @@ jobs.employ(Game.creeps, strat);
 for (var i in Game.creeps) {
 	var creep = Game.creeps[i];
 	
-	// If the creep doesn't have a job, find them a new one.
-	if (creep.memory.role !== null) {		
+	// If the creep has a role but doesn't have a specific job, find 
+	// them a new one.
+	if (creep.memory.role !== null) {	
 		// If the creep is unemployed, find a new job that needs to be
-		// done.
+		// done.		
 		if (!creep.memory.working) {
+			console.log("Finding a " + creep.memory.role + " job for " + creep.name);
 			var job = jobs.match(creep, market[creep.memory.role]);
+			console.log("calling work");
 			job.work();
 			
 			// Creep is now working.
 			creep.memory.working = true;
-		} else {
-			console.log("Working happily: " + creep.memory.currentTask);
+			creep.memory.jobsCompleted += 1;
 		}		
 	}
 }
 
 // Create new creeps if we don't have enough to satisfy demand.
+/*
 if (Math.random() > .9) {
 	var creep_id = Math.round(Math.random() * 10000);
 	Game.spawns.Spawn1.createCreep([Game.WORK, Game.MOVE, Game.CARRY], "Creep-" + creep_id);
 }
+*/
