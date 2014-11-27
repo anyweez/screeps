@@ -1,6 +1,4 @@
 module.exports = {
-	MINER: 1,
-	
 	employ: function(creeps, strategy) {
 		// Assign a role to each creep.
 		for (var i in creeps) {
@@ -11,6 +9,39 @@ module.exports = {
 			}
 			
 			creeps[i].memory.role = this.Miner().type;
+		}
+	},
+	
+	/**
+	 * Add new jobs that need to be taken care of to the global job market. It'll then be
+	 * picked up by creeps w/ the associated role.
+	 */
+	create: function(markets, strategy) {
+		for (var mid in markets) {
+			
+			switch (mid) {
+			    // Add reproduce events that are used to create new creeps.
+			    case "reproduce":
+    			    while (Object.keys(Game.creeps).length + markets.reproduce.length < strategy.population.desired) {
+						markets.reproduce.push({
+							jobName: "reproduce",
+							params: {
+								type: "miner"
+							}
+						});
+	    		    }
+	    		    break;
+	    		// Add miner events, used to bolster resource collection.
+	    		case "miner":
+	    		    while (markets.miner.length < 5) {
+	    		        markets.miner.push({
+	    		            jobName: "harvest",
+	    		        });
+	    		    }
+	    		    break;
+	    		default:
+	    		    break;
+			}
 		}
 	},
 	
@@ -33,12 +64,24 @@ module.exports = {
 		}
 	},
 	
+	/**
+	 * Pull the first job from the queue and return it. Eventually we should make sure that
+	 * the creep is capable of doing the job.
+	 */
 	match: function(creep, market) {
+		var numJobs = market.length;
+		var i = 0;
+
+        if (numJobs > 0) return market.shift();
+        else return null;
+
+/*
 		return {
 			assignedOn: 0,
 			worker: creep,
 			jobName: "harvest"
 		}
+*/
 	},
 	
 	Miner: function() {

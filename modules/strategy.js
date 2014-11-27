@@ -14,6 +14,9 @@ module.exports = {
 				work: {
 					miner: .8,
 					builder: .2
+				},
+				population: {
+					desired: 5
 				}
 			}
 		},
