@@ -1,5 +1,20 @@
+function init() {
+	// Only run this the first tick.
+	if (Memory.tickCounter === undefined) {
+		Memory.tickCounter = 0;
+	}
+}
+
 var jobs = require('jobs');
 var strategy = require('strategy');
+
+init();
+Memory.tickCounter++;
+
+if (Memory.tickCounter == 1) {
+	var creep_id = Math.round(Math.random() * 10000);
+	Game.spawns.Spawn1.createCreep([Game.WORK, Game.MOVE, Game.CARRY], "Creep-" + creep_id);
+}
 
 // TODO: job market
 var market = {
@@ -17,20 +32,18 @@ jobs.employ(Game.creeps, strat);
 for (var i in Game.creeps) {
 	var creep = Game.creeps[i];
 	
-	// If the creep has a role but doesn't have a specific job, find 
-	// them a new one.
 	if (creep.memory.role !== null) {	
-		// If the creep is unemployed, find a new job that needs to be
-		// done.		
-		if (!creep.memory.working) {
-			console.log("Finding a " + creep.memory.role + " job for " + creep.name);
+		// If the creep is unemployed, find a new job that needs to be done.
+		if (creep.memory.currentJob === null) {
 			var job = jobs.match(creep, market[creep.memory.role]);
-			console.log("calling work");
-			job.work();
-			
-			// Creep is now working.
-			creep.memory.working = true;
-			creep.memory.jobsCompleted += 1;
+			creep.memory.currentJob = job.jobName;			
+		}
+		
+		// Work the job. It's possible that the creep still won't have a
+		// job to do (none available at the marketplace), in which case
+		// we should skip.
+		if (creep.memory.currentJob !== null) {
+			jobs.work(creep);
 		}		
 	}
 }
