@@ -1,5 +1,5 @@
 // One tenth of a step should decay every turn.
-var MOVETRAIL_DECAY = .1;
+var MOVETRAIL_DECAY = 0.1;
 
 /**
  * Init is used to configure environmental properties that should be set
@@ -26,9 +26,15 @@ function init() {
 	}
 }
 
+
+console.log("test 2");
+
 var jobs = require('jobs');
 var strategy = require('strategy');
 
+
+
+// Init will only actually execute on the first tick of the simulation.
 init();
 Memory.tickCounter++;
 
@@ -40,11 +46,12 @@ var market = {
 	miner: [],
 	reproduce: [],
 	builder: [],
-}
+};
 
 // Select the civilization-wide strategy that'll govern what roles everyone
 // has and what tasks they pick up.
 var strat = strategy.select();
+
 // Create new jobs for each of the roles depending on what society needs.
 // Note that this function also creates reproduction requests ("jobs" for
 // spawners), which takes the global strategy into account.
@@ -87,19 +94,20 @@ for (var i in Game.spawns) {
 		// above. This is a POC.
 		var creep_id = Math.round(Math.random() * 10000);
 		var success = null;
+		
 		switch (job.params.type) {
 			case "miner":
 				success = spawn.createCreep([Game.WORK, Game.MOVE, Game.CARRY], "Creep-" + creep_id, {
-					role: "miner"
+					role: "miner",
 					jobsCompleted: 0,
-					currentJob = null,
+					currentJob: null,
 				});
 				break;
 			case "builder":
 				success = spawn.createCreep([Game.WORK, Game.MOVE], "Creep-" + creep_id, {
 					role: "builder",
 					jobsCompleted: 0,
-					currentJob = null,
+					currentJob: null,
 				});
 				break;
 			default:

@@ -32,8 +32,8 @@ module.exports = {
 							});
 						}
 						
-						console.log("[Reproduction:" + roleType + \
-							"] Current: " + roleCount + \
+						console.log("[Reproduction:" + roleType +
+							"] Current: " + roleCount +
 							", Desired: " + strategy.population.desired * strategy.work[roleType]);
 					}
 	    		    break;
@@ -55,11 +55,14 @@ module.exports = {
 							if (Memory[i][j] > ROAD_THRESHOLD) {
 								// Create a job request to build a road.
 								markets.builder.push({
-									jobName: "build.road"
+									jobName: "build.road",
 									params: {
-										pos: {x: i, y: j}
+										pos: {
+										    x: i, 
+										    y: j
+										}
 									}
-								};
+								});
 							}
 						}
 						
@@ -89,6 +92,7 @@ module.exports = {
 				break;
 			case "build.road":
 				buildRoad(creep);
+				break;
 			case null:
 				console.log(creep.name + " is idle.");
 				break;
@@ -161,7 +165,7 @@ function buildRoad(creep) {
 		creep.moveTo(dest);
 	// If the player is at the right place but the road doesn't exist yet,
 	// build it.
-	} else if (creep.room.lookAt(dest) {
+	} else if (creep.room.lookAt(dest)) {
 		
 	// Otherwise, the road already exists so the work is complete!
 	} else {
