@@ -1,35 +1,41 @@
-module.exports = {
-	employ: function(creeps, strategy) {
-		// Assign a role to each creep.
-		for (var i in creeps) {
-			// Initialize.
-			if (creeps[i].memory.jobsCompleted === undefined) {
-				creeps[i].memory.jobsCompleted = 0;
-				creeps[i].memory.currentJob = null;
-			}
-			
-			creeps[i].memory.role = this.Miner().type;
-		}
-	},
-	
+var ROAD_THRESHOLD = 5;
+
+module.exports = {	
 	/**
 	 * Add new jobs that need to be taken care of to the global job market. It'll then be
-	 * picked up by creeps w/ the associated role.
+	 * picked up by creeps w/ the associated role. This function creates jobs for all
+	 * roles, including reproduce jobs for spawners.
 	 */
 	create: function(markets, strategy) {
 		for (var mid in markets) {
-			
 			switch (mid) {
 			    // Add reproduce events that are used to create new creeps.
 			    case "reproduce":
-    			    while (Object.keys(Game.creeps).length + markets.reproduce.length < strategy.population.desired) {
-						markets.reproduce.push({
-							jobName: "reproduce",
-							params: {
-								type: "miner"
-							}
-						});
-	    		    }
+					for (var roleType in strategy.work) {
+						// Count the number of creeps that have this role as well as
+						// those who are already queued up.
+						var roleCount = 0;
+						for (var i in Game.creeps) {
+							if (Game.creeps[i].memory.role == roleType) roleCount++;
+						}
+						for (var i in markets.reproduce) {
+							if (markets.reproduce[i].params.type == roleType) roleCount++;
+						}
+						
+						// If we should have more than we do, generate reproduction requests.
+						while (roleCount < strategy.population.desired * strategy.work[roleType]) {
+							markets.reproduce.push({
+								jobName: "reproduce",
+								params: {
+									type: roleType
+								}
+							});
+						}
+						
+						console.log("[Reproduction:" + roleType + \
+							"] Current: " + roleCount + \
+							", Desired: " + strategy.population.desired * strategy.work[roleType]);
+					}
 	    		    break;
 	    		// Add miner events, used to bolster resource collection.
 	    		case "miner":
@@ -39,22 +45,50 @@ module.exports = {
 	    		        });
 	    		    }
 	    		    break;
+	    		case "builder":
+					// Look for places that need roads, and generate requests to build
+					// them if you find any.
+					for (var i = 0; i < Memory.moveTrail.length; i++) {
+						var row = Memory.moveTrail[i];
+						
+						for (var j = 0; j < row.length; j++) {
+							if (Memory[i][j] > ROAD_THRESHOLD) {
+								// Create a job request to build a road.
+								markets.builder.push({
+									jobName: "build.road"
+									params: {
+										pos: {x: i, y: j}
+									}
+								};
+							}
+						}
+						
+						console.log("[Build.road] Road construction request @ (" + i + ", " + j + ")");
+					}
+					
+					// TODO: Add more builder jobs.
+					
+					break;
 	    		default:
+					console.log("No job creation role for role type " + mid);
 	    		    break;
 			}
 		}
 	},
 	
 	/**
-	 * Function called in the main loop that gets a creep to perform their
-	 * assigned job.
+	 * Called in the main loop to get a creep to perform their assigned job.
+	 * Note that this function does NOT do the assignment (match identifies
+	 * an appropriate job for a given creep).
 	 */
 	work: function(creep) {
-		switch(creep.memory.currentJob) {
+		switch(creep.memory.currentJob.jobName) {
 			// Get energy and return it to spawn points.
 			case "harvest":
 				harvest(creep);
 				break;
+			case "build.road":
+				buildRoad(creep);
 			case null:
 				console.log(creep.name + " is idle.");
 				break;
@@ -74,25 +108,7 @@ module.exports = {
 
         if (numJobs > 0) return market.shift();
         else return null;
-
-/*
-		return {
-			assignedOn: 0,
-			worker: creep,
-			jobName: "harvest"
-		}
-*/
 	},
-	
-	Miner: function() {
-		return {
-			/**
-			 * The type of the creep. This is used for conditions everywhere
-			 * and shouldn't be changed for this job type.
-			 */
-			type: "miner",
-		} // end return
-	}
 }
 
 /**
@@ -134,4 +150,21 @@ function harvest(creep) {
 				break;
 		}
 	}				
+}
+
+// TODO: finish this function and make sure it works.
+function buildRoad(creep) {
+	// var dest = 
+	
+	// If the player isn't at the right place, keep moving.
+	if (creep.pos != dest) {
+		creep.moveTo(dest);
+	// If the player is at the right place but the road doesn't exist yet,
+	// build it.
+	} else if (creep.room.lookAt(dest) {
+		
+	// Otherwise, the road already exists so the work is complete!
+	} else {
+		finishJob(creep);
+	}
 }
